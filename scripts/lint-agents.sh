@@ -93,16 +93,26 @@ lint_file() {
 
 # Collect files to lint
 files=()
+skipped=0
 if [[ $# -gt 0 ]]; then
   files=("$@")
 else
   for dir in "${AGENT_DIRS[@]}"; do
     if [[ -d "$dir" ]]; then
       while IFS= read -r f; do
+        # Skip files without frontmatter (non-agent docs like strategy/QUICKSTART.md),
+        # matching convert.sh. Explicitly passed files are always linted.
+        if [[ "$(head -1 "$f")" != "---" ]]; then
+          skipped=$((skipped + 1))
+          continue
+        fi
         files+=("$f")
       done < <(find "$dir" -name "*.md" -type f | sort)
     fi
   done
+  if [[ $skipped -gt 0 ]]; then
+    echo "Skipped ${skipped} non-agent doc(s) without frontmatter."
+  fi
 fi
 
 if [[ ${#files[@]} -eq 0 ]]; then
