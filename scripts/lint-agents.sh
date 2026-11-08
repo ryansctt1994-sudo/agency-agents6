@@ -64,8 +64,10 @@ lint_file() {
   fi
 
   # 2. Check required frontmatter fields
+  # Use here-strings, not `echo | grep -q`: with pipefail, grep -q exiting on the
+  # first match can SIGPIPE the echo and make the check fail spuriously.
   for field in "${REQUIRED_FRONTMATTER[@]}"; do
-    if ! echo "$frontmatter" | grep -qE "^${field}:"; then
+    if ! grep -qE "^${field}:" <<< "$frontmatter"; then
       echo "ERROR $file: missing frontmatter field '${field}'"
       errors=$((errors + 1))
     fi
@@ -76,7 +78,7 @@ lint_file() {
   body=$(awk 'BEGIN{n=0} /^---$/{n++; next} n>=2{print}' "$file")
 
   for section in "${RECOMMENDED_SECTIONS[@]}"; do
-    if ! echo "$body" | grep -qi "$section"; then
+    if ! grep -qi "$section" <<< "$body"; then
       echo "WARN  $file: missing recommended section '${section}'"
       warnings=$((warnings + 1))
     fi
