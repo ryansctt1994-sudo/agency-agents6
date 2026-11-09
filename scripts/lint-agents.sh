@@ -99,6 +99,10 @@ else
   for dir in "${AGENT_DIRS[@]}"; do
     if [[ -d "$dir" ]]; then
       while IFS= read -r f; do
+        # Mirror convert.sh: skip non-agent docs without frontmatter
+        # (e.g. strategy/QUICKSTART.md). Files passed explicitly are
+        # still checked strictly.
+        [[ "$(head -1 "$f")" == "---" ]] || continue
         files+=("$f")
       done < <(find "$dir" -name "*.md" -type f | sort)
     fi
