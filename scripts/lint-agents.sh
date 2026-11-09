@@ -64,8 +64,9 @@ lint_file() {
   fi
 
   # 2. Check required frontmatter fields
+  # Here-strings avoid grep -q closing early and SIGPIPE under pipefail.
   for field in "${REQUIRED_FRONTMATTER[@]}"; do
-    if ! echo "$frontmatter" | grep -qE "^${field}:"; then
+    if ! grep -qE "^${field}:" <<< "$frontmatter"; then
       echo "ERROR $file: missing frontmatter field '${field}'"
       errors=$((errors + 1))
     fi
@@ -76,7 +77,7 @@ lint_file() {
   body=$(awk 'BEGIN{n=0} /^---$/{n++; next} n>=2{print}' "$file")
 
   for section in "${RECOMMENDED_SECTIONS[@]}"; do
-    if ! echo "$body" | grep -qi "$section"; then
+    if ! grep -qi "$section" <<< "$body"; then
       echo "WARN  $file: missing recommended section '${section}'"
       warnings=$((warnings + 1))
     fi
@@ -99,6 +100,10 @@ else
   for dir in "${AGENT_DIRS[@]}"; do
     if [[ -d "$dir" ]]; then
       while IFS= read -r f; do
+        # Mirror convert.sh: skip non-agent docs without frontmatter
+        # (e.g. strategy/QUICKSTART.md). Files passed explicitly are
+        # still checked strictly.
+        [[ "$(head -1 "$f")" == "---" ]] || continue
         files+=("$f")
       done < <(find "$dir" -name "*.md" -type f | sort)
     fi
