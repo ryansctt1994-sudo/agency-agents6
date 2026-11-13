@@ -53,9 +53,9 @@ lint_file() {
     return
   fi
 
-  # A missing closing delimiter must fail rather than treating the whole file
-  # as frontmatter and merely warning about the absent body.
-  if [[ $(grep -c '^---  local frontmatter
+  # The frontmatter must contain a closing delimiter; otherwise the body
+  # can be misinterpreted as frontmatter and malformed files may pass.
+  if ! tail -n +2 "$file" | grep -q '^---  local frontmatter
   frontmatter=$(awk 'NR==1{next} /^---$/{exit} {print}' "$file")
 
   if [[ -z "$frontmatter" ]]; then
@@ -128,7 +128,7 @@ else
   echo "PASSED"
   exit 0
 fi
- "$file") -lt 2 ]]; then
+; then
     echo "ERROR $file: missing frontmatter closing ---"
     errors=$((errors + 1))
     return
