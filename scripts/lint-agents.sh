@@ -53,82 +53,8 @@ lint_file() {
     return
   fi
 
-  # The frontmatter must contain a closing delimiter; otherwise the body
-  # can be misinterpreted as frontmatter and malformed files may pass.
-  if ! tail -n +2 "$file" | grep -q '^---  local frontmatter
-  frontmatter=$(awk 'NR==1{next} /^---$/{exit} {print}' "$file")
-
-  if [[ -z "$frontmatter" ]]; then
-    echo "ERROR $file: empty or malformed frontmatter"
-    errors=$((errors + 1))
-    return
-  fi
-
-  # 2. Check required frontmatter fields
-  for field in "${REQUIRED_FRONTMATTER[@]}"; do
-    if ! echo "$frontmatter" | grep -qE "^${field}:"; then
-      echo "ERROR $file: missing frontmatter field '${field}'"
-      errors=$((errors + 1))
-    fi
-  done
-
-  # 3. Check recommended sections (warn only)
-  local body
-  body=$(awk 'BEGIN{n=0} /^---$/{n++; next} n>=2{print}' "$file")
-
-  for section in "${RECOMMENDED_SECTIONS[@]}"; do
-    if ! echo "$body" | grep -qi "$section"; then
-      echo "WARN  $file: missing recommended section '${section}'"
-      warnings=$((warnings + 1))
-    fi
-  done
-
-  # 4. Check file has meaningful content (awk strips wc's leading whitespace on macOS/BSD)
-  local word_count
-  word_count=$(echo "$body" | wc -w | awk '{print $1}')
-  if [[ "${word_count:-0}" -lt 50 ]]; then
-    echo "WARN  $file: body seems very short (< 50 words)"
-    warnings=$((warnings + 1))
-  fi
-}
-
-# Collect files to lint
-files=()
-if [[ $# -gt 0 ]]; then
-  files=("$@")
-else
-  for dir in "${AGENT_DIRS[@]}"; do
-    if [[ -d "$dir" ]]; then
-      while IFS= read -r f; do
-        files+=("$f")
-      done < <(find "$dir" -name "*.md" -type f | sort)
-    fi
-  done
-fi
-
-if [[ ${#files[@]} -eq 0 ]]; then
-  echo "No agent files found."
-  exit 1
-fi
-
-echo "Linting ${#files[@]} agent files..."
-echo ""
-
-for file in "${files[@]}"; do
-  lint_file "$file"
-done
-
-echo ""
-echo "Results: ${errors} error(s), ${warnings} warning(s) in ${#files[@]} files."
-
-if [[ $errors -gt 0 ]]; then
-  echo "FAILED: fix the errors above before merging."
-  exit 1
-else
-  echo "PASSED"
-  exit 0
-fi
-; then
+  # Reject unclosed frontmatter before field extraction.
+  if ! tail -n +2 "$file" | grep -q '^---$'; then
     echo "ERROR $file: missing frontmatter closing ---"
     errors=$((errors + 1))
     return
