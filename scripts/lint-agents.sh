@@ -46,16 +46,23 @@ lint_file() {
 
   # 1. Check frontmatter delimiters
   local first_line
-  first_line=$(head -1 "$file")
+  first_line=$(head -1 "$file" | tr -d '\r')
   if [[ "$first_line" != "---" ]]; then
     echo "ERROR $file: missing frontmatter opening ---"
     errors=$((errors + 1))
     return
   fi
 
+  # Reject unclosed frontmatter before field extraction.
+  if ! awk 'NR > 1 { sub(/\r$/, ""); if ($0 == "---") found = 1 } END { exit !found }' "$file"; then
+    echo "ERROR $file: missing frontmatter closing ---"
+    errors=$((errors + 1))
+    return
+  fi
+
   # Extract frontmatter (between first and second ---)
   local frontmatter
-  frontmatter=$(awk 'NR==1{next} /^---$/{exit} {print}' "$file")
+  frontmatter=$(awk 'NR==1{next} {sub(/\r$/, "")} /^---$/{exit} {print}' "$file")
 
   if [[ -z "$frontmatter" ]]; then
     echo "ERROR $file: empty or malformed frontmatter"
@@ -73,7 +80,7 @@ lint_file() {
 
   # 3. Check recommended sections (warn only)
   local body
-  body=$(awk 'BEGIN{n=0} /^---$/{n++; next} n>=2{print}' "$file")
+  body=$(awk 'BEGIN{n=0} {sub(/\r$/, "")} /^---$/{n++; next} n>=2{print}' "$file")
 
   for section in "${RECOMMENDED_SECTIONS[@]}"; do
     if ! echo "$body" | grep -qi "$section"; then
