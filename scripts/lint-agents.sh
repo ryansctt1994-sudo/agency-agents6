@@ -10,7 +10,7 @@
 
 set -euo pipefail
 
-# Keep in sync with AGENT_DIRS in scripts/convert.sh
+# Strategy contains playbooks and coordination guides rather than agent profiles.
 AGENT_DIRS=(
   academic
   design
@@ -24,7 +24,6 @@ AGENT_DIRS=(
   sales
   spatial-computing
   specialized
-  strategy
   support
   testing
 )
@@ -72,8 +71,11 @@ lint_file() {
 
   # 2. Check required frontmatter fields
   for field in "${REQUIRED_FRONTMATTER[@]}"; do
-    if ! echo "$frontmatter" | grep -qE "^${field}:"; then
+    if ! grep -qE "^${field}:" <<< "$frontmatter"; then
       echo "ERROR $file: missing frontmatter field '${field}'"
+      errors=$((errors + 1))
+    elif grep -qE "^${field}:[[:space:]]*(#.*)?$" <<< "$frontmatter"; then
+      echo "ERROR $file: blank required frontmatter field '${field}'"
       errors=$((errors + 1))
     fi
   done
