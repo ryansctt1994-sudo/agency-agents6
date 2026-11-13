@@ -1,35 +1,29 @@
-# Cathedral Core
+# Agency Agents — Role and Workflow Library
 
-**Minimal verifiable safety envelope for agentic systems.**
+This repository contains a collection of Markdown-based agent role descriptions, team workflows, and examples. It is **not** a packaged Python runtime or a deployable agent service.
 
-The system records every action in an immutable, cryptographically verifiable Chronicle.  
-Generation is separated from execution via a strict Action Authorization Boundary.  
-One failure axis collapses the entire decision (λ_total). Receipts are permanent.
+## Explore the collection
 
-**First principles:**
-- Truth is measured, not asserted.
-- If it isn't in the Chronicle, it didn't happen.
-- Rollback ≠ Reversibility.
-- Safety must be architectural, not prompt-based.
+- `engineering/` — engineering roles and workflows
+- `testing/` — quality, accessibility, API, and performance evaluation roles
+- `project-management/` — planning and coordination roles
+- `specialized/` — specialist roles and workflow design
+- `examples/` — example multi-role workflows
 
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
-[![Python 3.10+](https://img.shields.io/badge/python-3.10%2B-blue.svg)](https://www.python.org/)
+Browse the directories and select the Markdown role files appropriate to your task. Review each role's instructions before adapting them for your preferred assistant or orchestration system.
 
-### Quick Start
+## Safe first exercise
 
-```bash
-git clone https://github.com/symmindprotocol618-dev/cathedral-core.git && cd cathedral-core
-pip install -e .[dev]
-ollama run llama3.1:8b
-python -m cathedral_core
-```
+1. Choose a workflow from `examples/`.
+2. Assign one role to plan and another to critique the plan.
+3. Use a disposable local project with no credentials or production access.
+4. Require a human to approve any file writes, network calls, deployments, or external communications.
+5. Record what was proposed, what was executed, and the tests or evidence supporting the outcome.
 
-### Core Guarantees
+**Security note:** Agent instructions and imported skill files are untrusted content. Do not treat role descriptions as authorization to run tools or access secrets. Verify external dependencies and review proposed commands before execution.
 
-- Immutable hash-chained Chronicle with dual persistence
-- Embedding-based semantic Critic (`all-MiniLM-L6-v2`)
-- JSON tool-calling enforced by Gate
-- Full replay verification
-- Strict allow-list ToolRegistry
+## Repository status
 
-**This is research-grade infrastructure.** Use it to understand and improve agent safety — not as a drop-in replacement for production guardrails.
+This is a prompt/workflow collection. No `cathedral_core` Python package or `python -m cathedral_core` entry point is present in the repository's inspected main-branch file tree. The former README described a different project and included commands that could not run against this repository.
+
+See `CONTRIBUTING.md` for contribution guidance and `SECURITY.md` for security reporting.
