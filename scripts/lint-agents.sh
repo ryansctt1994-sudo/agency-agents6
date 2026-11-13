@@ -10,7 +10,7 @@
 
 set -euo pipefail
 
-# Keep in sync with AGENT_DIRS in scripts/convert.sh
+# Strategy contains playbooks and coordination guides rather than agent profiles.
 AGENT_DIRS=(
   academic
   design
@@ -24,7 +24,6 @@ AGENT_DIRS=(
   sales
   spatial-computing
   specialized
-  strategy
   support
   testing
 )
